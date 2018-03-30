@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class Alternant(models.Model):
 
@@ -63,20 +64,20 @@ class Alternant(models.Model):
         (42,"l’apprenti a interrompu ses études en classe de 4è"),
     )
 
-    id=models.AutoField(primary_key=True)
+    user=models.OneToOneField(User,on_delete=models.CASCADE,primary_key=True)
     nom=models.CharField(max_length=70)
     prenom=models.CharField(max_length=35)
     sexe=models.CharField(max_length=1)
     datenaissance=models.DateField()
     numerodepartementnaissance=models.CharField(max_length=3)
-    codeINSEEcommuneNaissance=models.CharField(max_length=5)
+    communeNaissance=models.CharField(max_length=60,blank=True)
     adresse1=models.CharField(max_length=100)
-    adresse2=models.CharField(max_length=100)
+    adresse2=models.CharField(max_length=100, blank=True)
     codepostal=models.CharField(max_length=5)
     ville=models.CharField(max_length=60)
     telephone=models.CharField(max_length=15)
     handicape=models.BooleanField(default=False)
-    courriel=models.CharField(max_length=40)
+    courriel=models.CharField(max_length=40, blank=True)
     nationalite=models.PositiveSmallIntegerField(choices=NATIONALITE)
     regimesocial=models.PositiveSmallIntegerField(choices=REGIMESOCIAL)
     situationavantcontrat=models.PositiveSmallIntegerField(choices=SITUATIONAVANTCONTRAT)
@@ -84,12 +85,13 @@ class Alternant(models.Model):
     derniereanneesuivie=models.PositiveSmallIntegerField(choices=DERNIEREANNEESUIVIE)
     intituledernierdiplomeprepare=models.CharField(max_length=100)
     diplomelepluseleve=models.PositiveSmallIntegerField(choices=DIPLOME)
-    nomrepresentant=models.CharField(max_length=70)
-    prenomrepresentant=models.CharField(max_length=35)
-    adresse1representant=models.CharField(max_length=100)
-    adresse2representant=models.CharField(max_length=100)
-    codepostalrepresentant=models.CharField(max_length=5)
-    villerepresentant=models.CharField(max_length=60)
+    nomrepresentant=models.CharField(max_length=70, blank=True)
+    prenomrepresentant=models.CharField(max_length=35, blank=True)
+    adresse1representant=models.CharField(max_length=100, blank=True)
+    adresse2representant=models.CharField(max_length=100, blank=True)
+    codepostalrepresentant=models.CharField(max_length=5, blank=True)
+    villerepresentant=models.CharField(max_length=60, blank=True)
+    datemaj=models.DateTimeField()
 
     def __str__(self):
         return self.nom + " " + self.prenom
@@ -114,6 +116,11 @@ class Entreprise(models.Model):
         (29,"Autre employeur public"),
     )
 
+    SECTEUREMPLOYEUR = (
+        (1,"Privé"),
+        (2,"Public"),
+    )
+
     EMPLOYEURSPECIFIQUE = (
         (1,"Entreprise de travail temporaire"),
         (2,"Groupement d’employeurs"),
@@ -126,19 +133,22 @@ class Entreprise(models.Model):
     raisonsociale = models.CharField(max_length=70)
     numeroSIRET = models.CharField(max_length=14)
     adresse1=models.CharField(max_length=100)
-    adresse2=models.CharField(max_length=100)
+    adresse2=models.CharField(max_length=100, blank=True)
     codepostal=models.CharField(max_length=5)
     ville=models.CharField(max_length=70)
     typeemployeur=models.PositiveSmallIntegerField(choices=TYPEEMPLOYEUR)
+    secteuremployeur=models.PositiveSmallIntegerField(choices=SECTEUREMPLOYEUR)
     employeurspecifique=models.PositiveSmallIntegerField(choices=EMPLOYEURSPECIFIQUE)
     codeAPE=models.CharField(max_length=5)
     effectifentreprise=models.PositiveSmallIntegerField()
     telephone=models.CharField(max_length=15)
-    telecopie=models.CharField(max_length=15)
+    telecopie=models.CharField(max_length=15, blank=True)
     courriel=models.CharField(max_length=40)
-    codeconventioncollective=models.CharField(max_length=4)
-    libelleconventioncollective=models.CharField(max_length=200)
-    adhesionregimeassurancechomage=models.BooleanField(default=False)
+    codeconventioncollective=models.CharField(max_length=4, blank=True)
+    libelleconventioncollective=models.CharField(max_length=200, blank=True)
+    adhesionregimeassurancechomage=models.BooleanField(default=False, blank=True)
+    datemaj=models.DateTimeField(blank=True)
+    datemajcontacts=models.DateTimeField(blank=True)
 
     def __str__(self):
         return self.raisonsociale
@@ -150,7 +160,9 @@ class Personnel(models.Model):
     civilite=models.CharField(max_length=12)
     nom=models.CharField(max_length=70)
     prenom=models.CharField(max_length=35)
+    courriel=models.CharField(max_length=40, blank=True)
     datenaissance=models.DateField()
+    datemaj=models.DateTimeField()
 
     def __str__(self):
         return self.nom + " " + self.prenom
@@ -159,7 +171,7 @@ class CFA(models.Model):
     numeroUAI=models.CharField(max_length=8,primary_key=True)
     nom = models.CharField(max_length=70)
     adresse1=models.CharField(max_length=100)
-    adresse2=models.CharField(max_length=100)
+    adresse2=models.CharField(max_length=100, blank=True)
     codepostal=models.CharField(max_length=5)
     ville=models.CharField(max_length=60)
 
@@ -197,15 +209,15 @@ class Formation(models.Model):
     diplome=models.PositiveSmallIntegerField(choices=DIPLOME)
     intitule=models.CharField(max_length=100)
     codediplome=models.CharField(max_length=8)
-    an1du=models.DateTimeField()
-    an1au=models.DateTimeField()
+    an1du=models.DateField()
+    an1au=models.DateField()
     heuresan1=models.PositiveSmallIntegerField()
-    an2du=models.DateTimeField()
-    an2au=models.DateTimeField()
-    heuresan2=models.PositiveSmallIntegerField()
-    an3du=models.DateTimeField()
-    an3au=models.DateTimeField()
-    heuresan3=models.PositiveSmallIntegerField()
+    an2du=models.DateField(blank=True)
+    an2au=models.DateField(blank=True)
+    heuresan2=models.PositiveSmallIntegerField(blank=True)
+    an3du=models.DateField(blank=True)
+    an3au=models.DateField(blank=True)
+    heuresan3=models.PositiveSmallIntegerField(blank=True)
     niveau=models.PositiveSmallIntegerField()
     duree=models.PositiveSmallIntegerField()
     inpectionpedagogiquecompetente=models.PositiveSmallIntegerField()
@@ -216,7 +228,7 @@ class Formation(models.Model):
 class Contrat(models.Model):
 
     MODECONTRACTUEL = (
-        (1,"à durée limitée"),
+        (1,"dans le cade d'un CDD"),
         (2,"dans le cade d'un CDI"),
         (3,"entreprise de travail temporaire"),
         (4,"activités saisonnières à deux employeurs"),
@@ -248,61 +260,66 @@ class Contrat(models.Model):
 
     id=models.AutoField(primary_key=True)
     modecontractuel=models.PositiveSmallIntegerField(choices=MODECONTRACTUEL)
-    alternant=models.ForeignKey(Alternant, on_delete=models.CASCADE)
-    entreprise=models.ForeignKey(Entreprise, on_delete=models.CASCADE)
-    formation=models.ForeignKey(Formation, on_delete=models.CASCADE)
-    mission=models.TextField()
+    alternant=models.ForeignKey(Alternant, on_delete=models.CASCADE, blank=True)
+    entreprise=models.ForeignKey(Entreprise, on_delete=models.CASCADE, blank=True)
+    formation=models.ForeignKey(Formation, on_delete=models.CASCADE, blank=True)
+    mission=models.TextField(blank=True)
     typecontratavenant=models.PositiveSmallIntegerField(choices=TYPECONTRATAVENANT)
-    dateinscription=models.DateField()
-    typederogation=models.PositiveSmallIntegerField(choices=TYPEDEROGATION)
-    numerocontratanterieur=models.CharField(max_length=20)
-    dateembauche=models.DateField()
-    dateexecution=models.DateField()
-    dateeffetavenant=models.DateField()
-    datefincontrat=models.DateField()
-    dureehebdomadairetravail=models.DurationField()
+    dateinscription=models.DateField(blank=True)
+    typederogation=models.PositiveSmallIntegerField(choices=TYPEDEROGATION,blank=True)
+    numerocontratanterieur=models.CharField(max_length=20,blank=True)
+    dateembauche=models.DateField(blank=True)
+    datedebutcontrat=models.DateField(blank=True)
+    dateeffetavenant=models.DateField(blank=True)
+    datefincontrat=models.DateField(blank=True)
+    dureehebdomadairetravail=models.DurationField(blank=True)
     risquesparticuliers=models.BooleanField(default=False)
-    an1per1du=models.DateTimeField()
-    an1per1au=models.DateTimeField()
-    an1per1taux=models.FloatField()
-    an1per1base=models.CharField(max_length=4)
-    an1per2du=models.DateTimeField()
-    an1per2au=models.DateTimeField()
-    an1per2taux=models.FloatField()
-    an1per2base=models.CharField(max_length=4)
-    an2per1du=models.DateTimeField()
-    an2per1au=models.DateTimeField()
-    an2per1taux=models.FloatField()
-    an2per1base=models.CharField(max_length=4)
-    an2per2du=models.DateTimeField()
-    an2per2au=models.DateTimeField()
-    an2per2taux=models.FloatField()
-    an2per2base=models.CharField(max_length=4)
-    an3per1du=models.DateTimeField()
-    an3per1au=models.DateTimeField()
-    an3per1taux=models.FloatField()
-    an3per1base=models.CharField(max_length=4)
-    an3per2du=models.DateTimeField()
-    an3per2au=models.DateTimeField()
-    an3per2taux=models.FloatField()
-    an3per2base=models.CharField(max_length=4)
-    an4per1du=models.DateTimeField()
-    an4per1au=models.DateTimeField()
-    an4per1taux=models.FloatField()
-    an4per1base=models.CharField(max_length=4)
-    an4per2du=models.DateTimeField()
-    an4per2au=models.DateTimeField()
-    an4per2taux=models.FloatField()
-    an4per2base=models.CharField(max_length=4)
-    salairebrutmensuel=models.FloatField()
-    caisseretraitecomplementaire=models.CharField(max_length=35)
-    nourriture=models.FloatField()
-    logement=models.FloatField()
-    primepanier=models.FloatField()
-    faita=models.CharField(max_length=60)
-    faitle=models.DateField()
+    numeroanneedebutcontrat =models.PositiveSmallIntegerField(blank=True)
+    salaireminimumconventionnel=models.FloatField(blank=True)
+    salairebrutmensuel=models.FloatField(blank=True)
+    caisseretraitecomplementaire=models.CharField(max_length=35,blank=True)
+    nourriture=models.FloatField(blank=True)
+    logement=models.FloatField(blank=True)
+    primepanier=models.FloatField(blank=True)
+    faita=models.CharField(max_length=60,blank=True)
+    faitle=models.DateField(blank=True)
     attestationpieces=models.BooleanField(default=False)
     attestationmaitreapprentissage=models.BooleanField(default=False)
+    datemaj=models.DateTimeField(blank=True)
+    detamajmission=models.DateTimeField(blank=True)
+    datesaisiecomplete=models.DateTimeField(blank=True)
+    dategenerationCERFA=models.DateTimeField(blank=True)
+    dateexportationCFA=models.DateTimeField(blank=True)
 
     def __str__(self):
         return self.id
+
+class Remuneration (models.Model):
+
+    BASE = (
+        (1,"SMIC"),
+        (2,"SMC"),
+    )
+
+    id=models.AutoField(primary_key=True)
+    contrat=models.ForeignKey(Contrat, on_delete=models.CASCADE)
+    annee=models.PositiveSmallIntegerField()
+    anper1du=models.DateField()
+    anper1au=models.DateField()
+    anper1taux=models.FloatField()
+    anper1base=models.CharField(max_length=4,choices=BASE)
+    anper2du=models.DateField(blank=True)
+    anper2au=models.DateField(blank=True)
+    anper2taux=models.FloatField(blank=True)
+    anper2base=models.CharField(max_length=4,choices=BASE,blank=True)
+
+
+    def __str__(self):
+        return self.id
+
+class SMIC (models.Model):
+
+    id=models.AutoField(primary_key=True)
+    du=models.DateField()
+    au=models.DateField()
+    montant=models.FloatField()
