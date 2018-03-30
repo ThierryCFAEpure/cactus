@@ -15,7 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from saisiecontrat.views import login,premierepage
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('',premierepage),
+    path('login/',login),
+    path('premierepage/',premierepage),
 ]
